@@ -30,7 +30,7 @@ var world = {
 	"width" : 1000
 }
 
-var world2 = new World({ height : 1000, width : 560, enableBlast : true, enableAttraction : false });
+var world2 = new World(1000, 560);
 
 init = function () {
 	canvas = document.getElementById("mainCanvas");
@@ -101,10 +101,30 @@ processParticles = function () {
 			var cosA = Math.cos(a);
 			var sinA = Math.sin(a);
 
-			world2.applyMouseBlast(particle);
-			world2.applyMouseAttraction(particle);
-			world2.applyMouseStir(particle);
+			// Mouse blast
+			if(world.enableBlast && mouse.isDown) {
+				if(d < blowDist) {
+					var blowAcc = (1 - (d / blowDist)) * 14;
+					particle.vX += cosA * blowAcc + .5 - Math.random();
+					particle.vY += sinA * blowAcc + .5 - Math.random();
+				}
+			}
 
+			// Mouse attraction
+			if(world.enableAttraction && d < toDist) {
+				var toAcc = (1 - (d / toDist)) * world.width * .0014;
+				particle.vX -= cosA * toAcc;
+				particle.vY -= sinA * toAcc;
+			}
+
+			// Mouse stir
+			if(world.enableStir && d < stirDist) {
+				var mAcc = (1 - (d / stirDist)) * world.width * .00022;
+				particle.vX += vX * mAcc;
+				particle.vY += vY * mAcc;			
+			}
+
+			// Pull of gravity
 			if (world.enableGravity) {
 				particle.vY += world.gravity;
 			}
@@ -170,9 +190,9 @@ processParticles = function () {
 		}
 	}
 
-//	if (mouse.isDown) {
-//		world.entities.push(spawnMovingParticle(mouse.x, mouse.y));
-//	}
+	if (mouse.isDown) {
+		world.entities.push(spawnMovingParticle(mouse.x, mouse.y));
+	}
 }
 
 onDocMouseMove = function (e) {
@@ -185,12 +205,10 @@ onDocMouseMove = function (e) {
 
 onDocMouseDown = function (e) {
 	mouse.isDown = true;
-	world2.mouse.isDown = true;
 	return false;
 }
 
 onDocMouseUp = function (e) {
 	mouse.isDown = false;
-	world2.mouse.isDown = false;
 	return false;
 }
